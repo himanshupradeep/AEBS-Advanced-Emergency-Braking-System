@@ -1,0 +1,114 @@
+/*@!Encoding:1252*/
+includes
+{
+  
+}
+
+variables
+{
+   message Engine_Message em;
+   message Acceleration_Message acc;
+   message EmergencyWarning_Message emw;
+   message Gear_Message gear;
+   msTimer Radartimer;
+   message Brake_Mesage brake;
+}
+
+on start
+{
+  write("Gear is in Neutral Position");
+  setTimer (Radartimer, 1000);
+ 
+}
+
+on timer Radartimer  //Periodic Radar message
+{
+  emw.RADAR_Signal = @Env_RADAR; // Update the radar signal from env Variable
+  output (emw); //Send the Radar Messgae
+  setTimer (Radartimer, 100); // Reset the timer
+}  
+  
+  on envVar Env_Engine
+  {
+    if(@Env_Engine==1)
+    {
+      em.Engine_Signal = @Env_Engine;
+      output(em);
+      write("Engine ON");
+    }
+  else
+    {
+      em.Engine_Signal = @Env_Engine;
+      output(em);
+      write("Engine OFF");
+    }
+  }
+  
+  on envVar Env_Gear
+  {
+    gear.Gear_Signal = @Env_Gear;
+    output(gear);
+  }
+
+  on envVar Env_ACC
+  {
+    
+    if ((@Env_Engine==1) && (@Env_Gear==1))
+    
+    {
+      emw.Speed_Signal = @Env_ACC;
+      output(acc);
+    }
+  }
+
+  on envVar Env_RADAR
+    
+    {
+      emw.RADAR_Signal = @Env_RADAR;
+      output(emw);
+    }  
+    
+ on message EmergencyWarning_Message
+    {
+      if ((@Env_Engine)&&(@Env_ACC>0))
+     {
+      if (@Env_RADAR==0)
+       {
+        @Env_Brake=0;
+        @Env_Zone1=0;
+        @Env_Zone2=0;
+        @Env_Zone3=0;
+        write("No Obstacle");
+       }
+      else if (@Env_RADAR==1)
+      {
+        @Env_Brake=0;
+        @Env_Zone1=1;
+        @Env_Zone2=0;
+        @Env_Zone3=0;
+        write("Zone 1 : Obstacle between 25 to 35 meteres");
+      }
+      else if (@Env_RADAR==2)
+      {
+        @Env_Brake=0;
+        @Env_Zone1=0;
+        @Env_Zone2=1;
+        @Env_Zone3=0;
+        write("Zone 2 : Obstacle between 15 to 25 meteres");
+      }
+       else if (@Env_RADAR==3)
+      {
+        @Env_Brake=1;
+        @Env_Zone1=0;
+        @Env_Zone2=0;
+        @Env_Zone3=1;
+        write("Zone 3 : Obstacle within 15 meteres");
+      }
+    }
+   }
+    
+ on envVar Env_Brake
+    {
+      brake.Brake_Signal = @Env_Brake;
+      output(brake);
+    }

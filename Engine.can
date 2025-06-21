@@ -1,0 +1,66 @@
+/*@!Encoding:1252*/
+includes
+{
+  
+}
+
+variables
+{
+   message Engine_Message em;
+   message Acceleration_Message acc;
+   message EmergencyWarning_Message emw;
+   message Gear_Message gear;
+   msTimer Radartimer;
+}
+
+on start
+{
+  write("Gear is in Neutral Position")
+  setTimer (Radartimer, 1000);
+ 
+}
+
+on timer Radartimer  //Periodic Radar message
+{
+  emw.Radar_Signal = @Env_RADAR; // Update the radar signal from env Variable
+  output (emw); //Send the Radar Messgae
+  setTimer (Radartimer, 100); // Reset the timer
+}  
+  
+  on envVar Env_Engine
+  {
+    if(@Env_Engine==1)
+    {
+      em.Engine_Signal = @Env_Engine;
+      output(em);
+      write("Engine ON");
+    }
+  else
+    {
+      em.Engine_Signal = @Env_Engine;
+      output(em);
+      write("Engine OFF");
+    }
+  }
+  
+  on envVar Env_Gear
+  {
+    gear.Gear_Signal = @Env_Gear;
+    output(gear);
+  }
+
+  on envVar Env_ACC
+  {
+    if(@Env_Engine==1)&& (@Env_Gear==1)
+    {
+      emw.Speed_Signal = @Env_ACC;
+      output(acc);
+    }
+  }
+
+  on envVar Env_RADAR
+    
+    {
+      emw.RADAR_Signal = @Env_RADAR;
+      output(emw);
+    }  
